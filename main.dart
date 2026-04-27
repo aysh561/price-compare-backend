@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 // =====================================================================
 // IMPORTANT: Yahan apna Vercel URL daalein deploy karne ke baad
 // =====================================================================
-const String kBackendUrl = 'https://aysh561-price-compare-backend-pduz.vercel.app/api/compare.js';
+const String kBackendUrl = 'https://aysh561-price-compare-backend-pduz.vercel.app/api/compare';
 
 void main() {
   runApp(const PriceCompareApp());
