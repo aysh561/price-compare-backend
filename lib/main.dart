@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 // =====================================================================
 // IMPORTANT: Yahan apna Vercel URL daalein deploy karne ke baad
 // =====================================================================
-const String kBackendUrl = 'https://aysh561-price-compare-backend-pduz.vercel.app/api/compare';
+const String kBackendUrl = 'https://YOUR-PROJECT.vercel.app/api/compare';
 
 void main() {
   runApp(const PriceCompareApp());
@@ -324,7 +324,7 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 20),
 
-        // Sites list
+        // Sites table
         Text('Website-wise Comparison',
             style: GoogleFonts.nunito(
                 fontSize: 14,
@@ -333,7 +333,85 @@ class _HomePageState extends State<HomePage> {
                 letterSpacing: 0.5)),
         const SizedBox(height: 10),
 
-        ...r.sites.map((s) => _siteCard(s, s.priceNum == minNum && minNum > 0)),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columnSpacing: 12,
+            headingRowColor: MaterialStateProperty.all(Colors.green.shade100),
+            dataRowColor: MaterialStateProperty.resolveWith((states) {
+              return Colors.grey.shade50;
+            }),
+            columns: [
+              DataColumn(label: Text('Website', style: GoogleFonts.nunito(fontWeight: FontWeight.w700))),
+              DataColumn(label: Text('Price', style: GoogleFonts.nunito(fontWeight: FontWeight.w700))),
+              DataColumn(label: Text('Trust', style: GoogleFonts.nunito(fontWeight: FontWeight.w700))),
+              DataColumn(label: Text('Risk', style: GoogleFonts.nunito(fontWeight: FontWeight.w700))),
+            ],
+            rows: r.sites.map((s) {
+              final isBest = s.priceNum == minNum && minNum > 0;
+              final riskColor = s.manipulationRisk == 'Low'
+                  ? Colors.green
+                  : s.manipulationRisk == 'Medium'
+                      ? Colors.orange
+                      : Colors.red;
+              return DataRow(
+                color: MaterialStateProperty.all(isBest ? Colors.green.shade100 : Colors.white),
+                cells: [
+                  DataCell(
+                    GestureDetector(
+                      onTap: () => launchUrl(Uri.parse(s.url), mode: LaunchMode.externalApplication),
+                      child: Text(s.name, 
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          color: Colors.blue.shade600,
+                          decoration: TextDecoration.underline,
+                          fontWeight: isBest ? FontWeight.w700 : FontWeight.w500,
+                        )),
+                    ),
+                  ),
+                  DataCell(
+                    Text(s.price,
+                      style: GoogleFonts.nunito(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: isBest ? Colors.green.shade700 : Colors.black,
+                      )),
+                  ),
+                  DataCell(
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text('${s.trustScore}/100',
+                        style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.blue.shade700,
+                        )),
+                    ),
+                  ),
+                  DataCell(
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: riskColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(s.manipulationRisk,
+                        style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: riskColor,
+                        )),
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
 
         const SizedBox(height: 20),
 
@@ -401,146 +479,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _siteCard(SiteResult s, bool isBest) {
-    final riskColor = s.manipulationRisk == 'Low'
-        ? Colors.green
-        : s.manipulationRisk == 'Medium'
-            ? Colors.orange
-            : Colors.red;
 
-    final trustColor = s.trustScore >= 75
-        ? Colors.green
-        : s.trustScore >= 50
-            ? Colors.orange
-            : Colors.red;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: isBest ? Colors.green.shade50 : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isBest ? Colors.green.shade400 : Colors.grey.shade200,
-          width: isBest ? 1.5 : 0.5,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row
-            Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Text(s.name,
-                          style: GoogleFonts.nunito(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: Colors.grey.shade800)),
-                      if (isBest) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text('Best Price',
-                              style: GoogleFonts.nunito(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700)),
-                        ),
-                      ]
-                    ],
-                  ),
-                ),
-                Text(s.price,
-                    style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: isBest
-                            ? Colors.green.shade700
-                            : Colors.grey.shade800)),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Trust score bar
-            Row(
-              children: [
-                Text('Trust:',
-                    style: GoogleFonts.nunito(
-                        fontSize: 12, color: Colors.grey.shade500)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: s.trustScore / 100,
-                      backgroundColor: Colors.grey.shade200,
-                      color: trustColor,
-                      minHeight: 8,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text('${s.trustScore}/100',
-                    style: GoogleFonts.nunito(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: trustColor)),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Risk badge + reason
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: riskColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text('${s.manipulationRisk} Risk',
-                      style: GoogleFonts.nunito(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: riskColor)),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(s.riskReason,
-                      style: GoogleFonts.nunito(
-                          fontSize: 11, color: Colors.grey.shade500)),
-                ),
-              ],
-            ),
-
-            // URL link
-            if (s.url.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () => launchUrl(Uri.parse(s.url),
-                    mode: LaunchMode.externalApplication),
-                child: Text(s.url,
-                    style: GoogleFonts.nunito(
-                        fontSize: 11,
-                        color: Colors.blue.shade600,
-                        decoration: TextDecoration.underline),
-                    overflow: TextOverflow.ellipsis),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
 }
