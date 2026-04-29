@@ -1,0 +1,25 @@
+{
+  "name": "price-compare-backend",
+  "version": "1.0.0",
+  "description": "Price comparison API for Pakistani e-commerce websites",
+  "main": "api/compare.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "price-comparison",
+    "pakistan",
+    "ecommerce",
+    "api"
+  ],
+  "author": "aysh561",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/speed-insights": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
