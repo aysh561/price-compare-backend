@@ -1,0 +1,15 @@
+{
+  "name": "price-compare-backend",
+  "version": "1.0.0",
+  "description": "Product price comparison API for Pakistani shoppers",
+  "main": "api/compare.js",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/speed-insights": "^1.1.0"
+  }
+}
