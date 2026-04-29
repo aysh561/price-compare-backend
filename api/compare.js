@@ -11,7 +11,6 @@ function makeRequest(body) {
         "Content-Type": "application/json",
         "x-api-key": process.env.ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
-        "anthropic-beta": "web-search-2025-03-05",
         "Content-Length": Buffer.byteLength(bodyStr),
       },
     };
@@ -44,15 +43,11 @@ module.exports = async function handler(req, res) {
   const { product } = req.body;
   if (!product) return res.status(400).json({ error: "Product name required" });
 
-  const prompt = `Search the web and find prices for "${product}" from Pakistani and international e-commerce websites like Daraz, OLX, Goto, Symbios, iShopping, Amazon, AliExpress etc.
+  const prompt = `Find prices for "${product}" from Pakistani e-commerce websites like Daraz, Goto, Symbios, iShopping, OLX, and international sites like Amazon, AliExpress.
 
-For each website found, provide:
-1. Price in PKR (or original currency)
-2. Trust score 0-100
-3. Manipulation risk: Low/Medium/High
-4. One sentence reason
+For each website provide trust score and manipulation risk assessment.
 
-Respond ONLY in this exact JSON format with no extra text:
+Respond ONLY in this exact JSON, nothing else before or after:
 {
   "product": "product name",
   "lowestPrice": "XXX PKR",
@@ -60,77 +55,48 @@ Respond ONLY in this exact JSON format with no extra text:
   "sites": [
     {
       "name": "Website Name",
-      "url": "https://...",
-      "price": "price string",
-      "priceNum": 1234,
+      "url": "https://example.com",
+      "price": "1500 PKR",
+      "priceNum": 1500,
       "trustScore": 85,
       "manipulationRisk": "Low",
-      "riskReason": "brief reason"
+      "riskReason": "Well known platform with verified reviews"
     }
   ],
-  "advice": "2-3 sentence buying recommendation in Urdu/English"
+  "advice": "Buying recommendation in Urdu/English mixed"
 }`;
 
   try {
-    const messages = [{ role: "user", content: prompt }];
+    const result = await makeRequest({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-    let finalText = "";
-    let attempts = 0;
-
-    while (attempts < 5) {
-      attempts++;
-      const result = await makeRequest({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages: messages,
-      });
-
-      // Add assistant response to messages
-      messages.push({ role: "assistant", content: result.content });
-
-      // Check stop reason
-      if (result.stop_reason === "end_turn") {
-        // Extract text from final response
-        for (const block of result.content) {
-          if (block.type === "text") {
-            finalText += block.text;
-          }
-        }
-        break;
-      } else if (result.stop_reason === "tool_use") {
-        // Add tool results and continue
-        const toolResults = [];
-        for (const block of result.content) {
-          if (block.type === "tool_use") {
-            toolResults.push({
-              type: "tool_result",
-              tool_use_id: block.id,
-              content: "Search completed",
-            });
-          }
-        }
-        if (toolResults.length > 0) {
-          messages.push({ role: "user", content: toolResults });
-        }
-      } else {
-        // Extract any text available
-        for (const block of result.content) {
-          if (block.type === "text") {
-            finalText += block.text;
-          }
-        }
-        break;
-      }
+    // Check for API error
+    if (result.error) {
+      return res.status(500).json({ error: result.error.message || "API error" });
     }
 
-    if (!finalText) throw new Error("No response from AI");
+    // Check content exists
+    if (!result.content || !Array.isArray(result.content)) {
+      return res.status(500).json({ error: "Invalid API response: " + JSON.stringify(result) });
+    }
+
+    // Extract text
+    const finalText = result.content
+      .filter((b) => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+
+    if (!finalText) throw new Error("Empty response from AI");
 
     const match = finalText.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Could not parse AI response");
+    if (!match) throw new Error("Could not find JSON in response");
 
     const parsed = JSON.parse(match[0]);
     return res.status(200).json(parsed);
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
