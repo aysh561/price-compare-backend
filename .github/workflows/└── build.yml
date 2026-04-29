@@ -1,1 +1,37 @@
+name: Build Flutter APK
 
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+
+      - name: Create Flutter project structure
+        run: |
+          flutter create --project-name price_compare_pk --org com.pricecompare temp_project
+          cp lib/main.dart temp_project/lib/main.dart
+          cp pubspec.yaml temp_project/pubspec.yaml
+          cd temp_project
+          flutter pub get
+          flutter build apk --debug
+          cd ..
+          mkdir -p output
+          cp temp_project/build/app/outputs/flutter-apk/app-debug.apk output/PriceCheckerPK.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PriceCheckerPK
+          path: output/PriceCheckerPK.apk
+          retention-days: 7
