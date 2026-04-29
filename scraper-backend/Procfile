@@ -1,0 +1,122 @@
+# Web Scraper Backend - Setup Guide
+
+## 🎯 Kya hoga?
+
+User → Product name → **Real-time Google Search** → Top 5 Links → Extract Prices → Table
+
+**Cost: 100% FREE!** ✅
+
+---
+
+## 🚀 Deploy on Render (FREE)
+
+### Step 1: GitHub mein files add karein
+```
+price-compare-backend/
+├── scraper-backend/
+│   ├── app.py           (backend_scraper.py)
+│   ├── requirements.txt
+│   └── Procfile
+```
+
+### Step 2: Procfile banana
+Create file: `Procfile` (scraper-backend folder mein)
+```
+web: gunicorn app:app
+```
+
+### Step 3: GitHub mein commit karein
+
+### Step 4: Render.com pe deploy karein
+
+1. https://render.com sign up (free)
+2. "New Web Service" → Connect GitHub
+3. Branch: `main`
+4. Build command: `pip install -r requirements.txt`
+5. Start command: `gunicorn app:app`
+6. Deploy! 🚀
+
+Aapko URL milega jaise: `https://your-app.onrender.com`
+
+---
+
+## 📱 Flutter App Update
+
+`main.dart` mein line 10 update karein:
+```dart
+const String kBackendUrl = 'https://your-app.onrender.com/api/search';
+```
+
+---
+
+## 📊 Response Format
+
+```json
+{
+  "product": "A4 paper",
+  "lowestPrice": "2,500 PKR",
+  "averagePrice": "2,900 PKR",
+  "sites": [
+    {
+      "name": "Daraz - A4 Paper Rim 70 GSM",
+      "url": "https://daraz.pk/...",
+      "price": "2,500",
+      "priceNum": 2500,
+      "trustScore": 92,
+      "manipulationRisk": "Low",
+      "riskReason": "Trusted Pakistani marketplace"
+    }
+  ],
+  "advice": "Best prices on Daraz"
+}
+```
+
+---
+
+## ⚙️ How It Works
+
+1. User enters: "A4 paper"
+2. Backend searches Google
+3. Finds top 5 product links from major sites
+4. Extracts prices from each page
+5. Assigns trust scores
+6. Sorts by price (low → high)
+7. Returns JSON with direct links
+8. App shows table with clickable links
+
+---
+
+## 🎨 Table Features
+
+✅ Direct product links (no ambiguity)
+✅ Extracted prices
+✅ Trust score with progress bar
+✅ Sortable by price
+✅ Risk assessment
+✅ One-click access to product page
+
+---
+
+## 🔄 Free Tier Details
+
+- **Render:** 550 free hours/month
+- **Requests:** Unlimited
+- **Scraping:** Real-time
+- **Cost:** ₹0
+
+---
+
+## 📝 Next Steps
+
+1. GitHub mein 3 files add karein:
+   - `scraper-backend/app.py`
+   - `scraper-backend/requirements.txt`
+   - `scraper-backend/Procfile`
+
+2. Render pe deploy karein (15 minute)
+
+3. Flutter URL update karein
+
+4. APK build karein
+
+5. Test! ✅
